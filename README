@@ -1,1 +1,4 @@
-testing git, still new here and stuff
+This is my little IRC bot programmed in mangled python2. 
+It's intended purpose is to act as a FAQbot, where you can as it a question, and if it recognizes a certain number of words in the question, will respond with the (hopefully) appropriate answer.
+
+It's far from being incredible, but meh, it works.
