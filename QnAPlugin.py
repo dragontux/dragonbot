@@ -5,9 +5,16 @@ if os.path.exists("qoutes"):
 else:
 	qoutesFile=open("qoutes", "w")
 	qouteDict = {}
+	trustedNicks = [ "mrdragons" ] 
 
-trustedNicks = [ "mrdragons" ] 
 handeler = "q:"
+
+def saveQoutes():
+	qoutesFile = open("qoutes", "w")
+	qoutesFile.write( "qouteDict=" + str(qouteDict) + "\ntrustedNicks=" + str(trustedNicks))
+	qoutesFile.close()
+	return 1
+
 
 class Plugin:
 	handeler = handeler
@@ -21,18 +28,54 @@ class Plugin:
 		message = message.lower()
 		message = message[len(handeler):]
 		messageRay = message.split(" ")
+		messageRay = messageRay[2:]
+		print(messageRay)
+		nick = nick.lower()
+		#print(messageRay)
 		if "hello bot" in message:
 			return ("Hello there " + nick + ".")
-		elif "remember" in message[2] and nick in trustedNicks and "=" in message:
-			findPos = message.find("=")
-			startPos = len(messageRay[0]) + len(messageRay[1] + 3)
-			qouteDict.update({message[startPos:findPos].strip(" "):message[findPos+1:len(message)-2].strip(" ")})
-			return ("Okay, I'll remember that.")
-			qoutesFile = open("qoutes", "w")
-			qoutesFile.write( "qouteDict=" + str(qouteDict) + "\ntrustedNicks=" + str(trustedNicks))
-		elif "reload qoutes" in message and nick in trustedNicks:
-			exec(compile(open("qoutes").read(), "qoutes", 'exec'))
-			return ("Qoutes reloaded.")
+		elif "remember" in message and "=" in message:
+			if nick in trustedNicks:
+				print("Okay, we got here...")
+				findPos = message.find("=")
+				startPos = len(messageRay[0]) + len(messageRay[1]) + 3
+				qouteDict.update({message[startPos:findPos].strip(" "):message[findPos+1:].strip(" ")})
+				return ("Okay, I'll remember that.")
+				qoutesFile = open("qoutes", "w")
+				qoutesFile.write( "qouteDict=" + str(qouteDict) + "\ntrustedNicks=" + str(trustedNicks))
+				print(qoutesFile.read())
+				qoutesFile.close()
+			else:
+				return "I don't trust you. >_>"
+		elif "reload qoutes" in message:
+			if nick in trustedNicks:
+				exec(compile(open("qoutes").read(), "qoutes", 'exec'))
+				return ("Qoutes reloaded.")
+			else:
+				return ("I don't trust you. >_>")
+		elif "add" in messageRay[0]:
+			if "trusted" in messageRay[1] and "nick" in messageRay[2]:
+				if nick in trustedNicks:
+					trustedNicks.append(messageRay[3].lower())
+					if saveQoutes() == 1:
+						return ("Nick %s added to trusted users." % ( messageRay[3] ) )
+					else:
+						return "Hmm... There may have been an error saving the file, try again."
+				else:
+					return "I don't trust you. >_>"
+		elif "remove" in messageRay[0]:
+			if "trusted" in messageRay[1] and "nick" in messageRay[2]:
+				if nick in trustedNicks:
+					try:
+						trustedNicks.remove(messageRay[3])
+						if saveQoutes() == 1:
+							return ("Nick %s removed from trusted users." % ( messageRay[3] ))
+						else:
+							return ("There was an error accessing the data file. Try again in a moment.")
+					except ValueError as e:
+						return ("Nick %s does not exist." % ( messageRay[3] ))
+				else:
+					return "I don't trust you. >_>"
 		elif len(messageRay) > 1:
 			mostSimilar = 100
 			sendQoute = "test"
