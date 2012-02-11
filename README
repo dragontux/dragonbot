@@ -1,7 +1,7 @@
 This is my little IRC bot programmed in python. 
-It's intended purpose is to act as a FAQbot, where you can as it a question, and if it recognizes a certain number of words in the question, will respond with the (hopefully) appropriate answer.
+It's intended purpose is to act as a FAQbot, although it is fairly versatile and modular, and can be modified to fit a variety of tasks.
 
-As of bot version 2-1, it supports plugins which can be loaded an unloaded while the bot is running, which adds a good bit of usability to it as you can modify it while it is running.
+As of bot version 2-1, it supports plugins which can be loaded an unloaded while the bot is running.
 The plugins follow a standard class format demonstrated in the example program Plugin.py.
 
 This is licenced under the freeBSD license.
