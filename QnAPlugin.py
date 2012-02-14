@@ -15,9 +15,9 @@ def saveQoutes():
 	qoutesFile.close()
 	return 1
 
-
 class Plugin:
 	handeler = handeler
+	shellHandeler = "QnA"
 	method = "string"
 	def __init__(self):
 		self.message = ""
@@ -26,36 +26,41 @@ class Plugin:
 		self.connection = connection
 	def ircPlug( nick, message, time, channel):
 		message = message.lower()
-		message = message[len(handeler):]
+		message = message[len(handeler)+1:]
 		messageRay = message.split(" ")
-		messageRay = messageRay[2:]
-		print(messageRay)
 		nick = nick.lower()
-		#print(messageRay)
+		trusted = False
+		if nick in trustedNicks:
+			trusted = True
+			
+		#print("______\n%s\n%s\n-------" % (messageRay, message))
 		if "hello bot" in message:
 			return ("Hello there " + nick + ".")
-		elif "remember" in message and "=" in message:
-			if nick in trustedNicks:
-				print("Okay, we got here...")
+		elif "remember" in messageRay[0] and "=" in message:
+			if trusted:
 				findPos = message.find("=")
-				startPos = len(messageRay[0]) + len(messageRay[1]) + 3
+				startPos = len(messageRay[0])
 				qouteDict.update({message[startPos:findPos].strip(" "):message[findPos+1:].strip(" ")})
-				return ("Okay, I'll remember that.")
-				qoutesFile = open("qoutes", "w")
-				qoutesFile.write( "qouteDict=" + str(qouteDict) + "\ntrustedNicks=" + str(trustedNicks))
-				print(qoutesFile.read())
-				qoutesFile.close()
+				#qoutesFile = open("qoutes", "w")
+				#qoutesFile.write( "qouteDict=%s\ntrustedNicks=%s" (str(qouteDict), str(trustedNicks))
+				#print(qoutesFile.read())
+				#qoutesFile.close()
+				if saveQoutes() == 1:
+					return ("Okay, I'll remember that.")
+				else:
+					return ("Hmm, seems there might have been an error saving the file... Try again.")
 			else:
 				return "I don't trust you. >_>"
 		elif "reload qoutes" in message:
-			if nick in trustedNicks:
-				exec(compile(open("qoutes").read(), "qoutes", 'exec'))
+			if trusted:
+				#exec(compile(open("qoutes").read()), "qoutes", 'exec')
+				exec(open("qoutes").read())
 				return ("Qoutes reloaded.")
 			else:
 				return ("I don't trust you. >_>")
 		elif "add" in messageRay[0]:
 			if "trusted" in messageRay[1] and "nick" in messageRay[2]:
-				if nick in trustedNicks:
+				if trusted:
 					trustedNicks.append(messageRay[3].lower())
 					if saveQoutes() == 1:
 						return ("Nick %s added to trusted users." % ( messageRay[3] ) )
@@ -65,7 +70,7 @@ class Plugin:
 					return "I don't trust you. >_>"
 		elif "remove" in messageRay[0]:
 			if "trusted" in messageRay[1] and "nick" in messageRay[2]:
-				if nick in trustedNicks:
+				if trusted:
 					try:
 						trustedNicks.remove(messageRay[3])
 						if saveQoutes() == 1:
@@ -92,4 +97,8 @@ class Plugin:
 					sendQoute = qoute
 			if mostSimilar < len(qouteRay)/2:
 				sendQoute = qouteDict[sendQoute]
+				sendQoute = sendQoute.replace("{nick}", nick)
 				return sendQoute
+	def shellPlug(args):
+		print("QnA shell plugin.")
+		execfile("manage_qoutes.py")
