@@ -7,6 +7,7 @@ import threading
 from IPC import botIPC_Thread
 
 botIPC = botIPC_Thread()
+botIPC.start()
 if botIPC.isAlive == False:
 	print("IPC off! Logs won't work...")
 else:
@@ -24,7 +25,7 @@ else:
 			print("IPC off...")
 	
 		def ircPlug(nick, message, mtime, channel):
-			if botIPC.logsOn == True:
+			if botIPC.getVal("logsOn") == True:
 				logName = "log-" + strftime("%m-%d-%y")
 				dirName = channel + strftime("%m-%y")
 	
@@ -40,10 +41,10 @@ else:
 			shellArgs = args.split(" ")
 			if len(shellArgs) >= 1:
 				if shellArgs[0] == "on":
-					botIPC.logsOn = True
+					botIPC.setVal("logsOn", True)
 					print("Logs on")
 				elif shellArgs[0] == "off":
-					botIPC.logsOn = False
+					botIPC.setVal("logsOn", False)
 					print("Logs off.")
 				else:
 					print("Que?")

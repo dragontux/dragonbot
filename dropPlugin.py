@@ -5,6 +5,7 @@ class Plugin:
 	handeler      = "drop:"
 	shellHandeler = "drop"
 	method        = "args"
+	help          = "Returns a random link from previous chats, and can pull up some really interesting things"
 
 	def ircPlug(nick, args, time, channel):
 		fileName = "linksdb"

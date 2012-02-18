@@ -19,6 +19,8 @@ class Plugin:
 	handeler = handeler
 	shellHandeler = "QnA"
 	method = "string"
+	help = "Ask a question in plain english, and if a similar question has been asked and stored before it will reply with an answer. In general, the broader and the simpler the question is, the more likely it is you will get a good answer. It is intended to function as a FAQ database."
+
 	def __init__(self):
 		self.message = ""
 		self.nick = ""
@@ -89,7 +91,7 @@ class Plugin:
 				similarity = 0
 				qouteRay = qoute.split(" ")
 				for word in qouteRay:
-					if word in message:
+					if word in message.lower():
 						similarity += 1
 					counter+=1
 				if counter-similarity < mostSimilar:
@@ -101,4 +103,4 @@ class Plugin:
 				return sendQoute
 	def shellPlug(args):
 		print("QnA shell plugin.")
-		execfile("manage_qoutes.py")
+		exec(open("manage_qoutes.py").read())

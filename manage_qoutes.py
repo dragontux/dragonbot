@@ -65,11 +65,9 @@ while running:
 			qoutesFile.close()
 			print("file saved.")
 			running = False
-			exit(0)
 		else:
 			print("File not saved.")
 			running = False
-			exit(0)
 	else:
 		print("Unknown command.")
 	
