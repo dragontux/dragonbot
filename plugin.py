@@ -17,7 +17,14 @@ class plugin_thread( threading.Thread ):
 			
 	def run( self ):
 		while True:
-			time.sleep(10)
+			time.sleep(1)
+			cur_time = time.strftime("%d:%H:%M:%S")
+			for thing in self.plist:
+				if thing.plugin.cron_time:
+					t_time = thing.plugin.cron_time
+					if t_time == cur_time[-len(t_time):]:
+						thing.plugin.cron( thing.plugin )
+				
 
 	def load_plugin( self, name ):
 		try:

@@ -3,6 +3,7 @@ import irc
 import input
 import plugin
 import sys
+import time
 
 config = { }
 config_file = "default.conf"
@@ -26,10 +27,9 @@ if __name__ == "__main__":
 		config_file = sys.argv[1]
 	read_config( config_file );
 
+	print( "[ bot ] Connecting to %s..." % ( config["server"][0] ))
 	server = irc.irc_server( config["server"][0] )
 	server.identify( config["nick"][0] )
-	server.join( config["channels"] )
-	print( "[ bot ] Connected to %s as %s." % ( config["server"][0], config["nick"][0] ))
 
 	plug_manager = plugin.plugin_thread( server, config["plugins"], config["trusted_nicks"]);
 	plug_manager.start( )
@@ -38,3 +38,8 @@ if __name__ == "__main__":
 	in_thread = input.in_thread( server, plug_manager );
 	in_thread.start( );
 	print( "[ bot ] Started input thread" )
+
+	time.sleep( 2 )
+
+	server.join( config["channels"] )
+	print( "[ bot ] Connected to %s as %s." % ( config["server"][0], config["nick"][0] ))

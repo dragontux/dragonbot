@@ -28,6 +28,18 @@ class irc_server( ):
 		self.send( "USER %s %s %s :%s\r\n" % ( nick, nick, nick, nick ))
 		self.send( "NICK %s\r\n" % ( nick ))
 
+	def nick( self, nick ):
+		self.send( "NICK %s\r\n" % ( nick ))
+
 	def join( self, channels ):
 		for thing in channels:
 			self.send( "JOIN %s\r\n" % ( thing ))
+
+	def part( self, channels ):
+		for thing in channels:
+			self.send( "PART %s\r\n" % ( thing ))
+
+	def quit( self, message ):
+		self.send( "QUIT :" + message + "\r\n" )
+		self.sock.close()
+		exit(0)
