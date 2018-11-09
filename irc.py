@@ -52,7 +52,6 @@ class irc_server( ):
         self.is_connected = False
         self.notified_disconnect = True
         self.server = config["server"][0]
-        self.nick = config["nick"][0]
         self.port = 6667
         self.config = config
 

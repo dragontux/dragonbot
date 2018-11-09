@@ -2,6 +2,8 @@ import irc
 import threading
 import tts
 import time
+import string
+import random
 
 ev_handlers = { }
 speaker = tts.TextToSpeach()
@@ -47,6 +49,15 @@ def irc_disconnected(server, msg):
 def irc_connected(server, msg):
     speaker.say("Connected to server.")
     server.identify(server.config["nick"][0])
+
+def random_suffix():
+    return "".join([random.choice(string.ascii_lowercase) for i in range(5)])
+
+@irc_event("433")
+def irc_connected(server, msg):
+    new_nick = server.config["nick"][0] + "_" + random_suffix()
+    server.nick(new_nick)
+    speaker.say("Re-identified as %s, there's a ghost connection." % new_nick)
 
 class in_thread(threading.Thread):
     def __init__(self, server):
