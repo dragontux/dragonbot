@@ -86,7 +86,7 @@ class irc_server( ):
     def send(self, message):
         self.reconnect()
 
-        print(message)
+        print(">> sending " + message)
         if self.sock.send(bytes(message, "UTF-8")) == 0:
             self.disconnect()
 

@@ -23,7 +23,6 @@ def irc_event(method):
 @irc_event("PING")
 def ping_reply(server, msg):
     server.send(msg["raw"].replace("I", "O", 3))
-    server.join(server.config["channels"])
 
 @irc_event("PRIVMSG")
 def version_ctcp_reply(server, msg):
@@ -61,8 +60,11 @@ def irc_disconnected(server, msg):
 
 @irc_event("CONNECTED")
 def irc_connected(server, msg):
-    speaker.say("Connected to server.")
     server.identify(server.config["nick"][0])
+    speaker.say("Connected to server.")
+
+def do_identify(server):
+    server.send_message("NickServ", "identify %s" % server.config["nick-password"][0])
 
 def random_suffix():
     return "".join([random.choice(string.ascii_lowercase) for i in range(5)])
@@ -71,7 +73,26 @@ def random_suffix():
 def irc_connected(server, msg):
     new_nick = server.config["nick"][0] + "_" + random_suffix()
     server.nick(new_nick)
-    speaker.say("Re-identified as %s, there's a ghost connection." % new_nick)
+    time.sleep(2)
+    speaker.say("Reidentifying.")
+    nickinfo = (server.config["nick"][0], server.config["nick-password"][0])
+    server.send_message("NickServ", "ghost %s %s" % nickinfo)
+    time.sleep(2)
+    server.send_message("NickServ", "recover %s %s" % nickinfo)
+    server.send_message("NickServ", "release %s %s" % nickinfo)
+    time.sleep(2)
+    server.nick(server.config["nick"][0])
+    do_identify(server)
+    speaker.say("Contained ghost.")
+
+@irc_event("376")
+def handle_end_of_motd(server, msg):
+    do_identify(server)
+
+@irc_event("396")
+def handle_identified(server, msg):
+    server.join(server.config["channels"])
+    speaker.say("Joined channels.")
 
 class in_thread(threading.Thread):
     def __init__(self, server):
