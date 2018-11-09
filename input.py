@@ -31,15 +31,29 @@ def version_ctcp_reply(server, msg):
         server.send_notice(msg["channel"], "\01VERSION desune-bot v0.1\01")
         print("Sent version...")
 
+# TODO: avoid having this as a global variable maybe
+last_channel = ""
+
 @irc_event("PRIVMSG")
 def chan_message(server, msg):
     # ignore ctcp messages in text-to-speech
     if msg["message"][0] == "\01":
         return
 
-    thing = "from %s: %s says %s" % (msg["channel"], msg["nick"], msg["message"])
-    print(thing)
-    speaker.say(thing)
+    global last_channel
+    speech = ""
+
+    if msg["channel"] == last_channel:
+        speech = "%s says %s" % (msg["nick"], msg["message"])
+
+    else:
+        last_channel = msg["channel"]
+        speech = "from %s: %s says %s" % (msg["channel"],
+                                          msg["nick"],
+                                          msg["message"])
+
+    print(speech)
+    speaker.say(speech)
 
 @irc_event("DISCONNECTED")
 def irc_disconnected(server, msg):
