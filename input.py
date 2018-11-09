@@ -1,35 +1,75 @@
 import irc
 import threading
+import tts
+import time
 
-class in_thread( threading.Thread ):
-	def __init__( self, server, p_man ):
-		threading.Thread.__init__(self)
-		self.server = server;
-		self.p_man  = p_man
+ev_handlers = { }
+speaker = tts.TextToSpeach()
 
-	def run( self ):
-		server = self.server
-		while True:
-			response = server.recv()
-			lines	= response.split("\n");
-			if len( response ) < 4:
-				exit( 0 )
-			else:
-				pass
-				#print( response )
-				
-			for line in lines:
-				if "PING :" in line[0:7]:
-					server.send( line.replace( "I", "O", 3 ))
-					print( "-----[ Sent pong ]-----" )
-				elif "PRIVMSG" in line:
-					parsed = irc.parse_message( line );
-				
-					if parsed:
-						if parsed["channel"][0] == "#":
-							reply_to = parsed["channel"]
-						else:
-							reply_to = parsed["nick"]
-						#print( "[debug] got: %s: %s" % ( reply_to, parsed["message"] ))
-						if parsed["message"][0] == "!":
-							self.p_man.exec_cmd( parsed )
+def add_handler(method, func):
+    if method not in ev_handlers:
+        ev_handlers.update({method : []})
+
+    ev_handlers[method] += [func]
+
+def irc_event(method):
+    def do_add(func):
+        add_handler(method, func)
+
+    return do_add
+
+@irc_event("PING")
+def ping_reply(server, msg):
+    server.send(msg["raw"].replace("I", "O", 3))
+    server.join(server.config["channels"])
+
+@irc_event("PRIVMSG")
+def version_ctcp_reply(server, msg):
+    if "\01VERSION\01" in msg["message"]:
+        server.send_notice(msg["channel"], "\01VERSION desune-bot v0.1\01")
+        print("Sent version...")
+
+@irc_event("PRIVMSG")
+def chan_message(server, msg):
+    # ignore ctcp messages in text-to-speech
+    if msg["message"][0] == "\01":
+        return
+
+    thing = "from %s: %s says %s" % (msg["channel"], msg["nick"], msg["message"])
+    print(thing)
+    speaker.say(thing)
+
+@irc_event("DISCONNECTED")
+def irc_disconnected(server, msg):
+    speaker.say("Lost connection...")
+
+@irc_event("CONNECTED")
+def irc_connected(server, msg):
+    speaker.say("Connected to server.")
+    server.identify(server.config["nick"][0])
+
+class in_thread(threading.Thread):
+    def __init__(self, server):
+        threading.Thread.__init__(self)
+        self.server = server;
+
+    def do_event_handlers(self, msg):
+        print(msg["action"] + " " + msg["raw"])
+        if msg["action"] not in ev_handlers:
+            return
+
+        for handler in ev_handlers[msg["action"]]:
+            handler(self.server, msg)
+
+    def run(self):
+        server = self.server
+
+        while True:
+            response = server.recv()
+            lines    = response.split("\n");
+
+            for line in lines:
+                if len(line) < 3:
+                    continue
+
+                self.do_event_handlers(irc.parse_message(line))
