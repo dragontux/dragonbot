@@ -4,6 +4,7 @@ import time
 # XXX: (dis)connection messages so losses in connection can be hooked
 DISCONNECTED_MSG = "DISCONNECTED :lost connection\n"
 CONNECTED_MSG = "CONNECTED :connected to server\n"
+INVALID_MSG = "INVALID :Invalid message\n"
 
 def parse_host(host_str):
     nick = ""
@@ -87,7 +88,11 @@ class irc_server( ):
         self.reconnect()
 
         print(">> sending " + message)
-        if self.sock.send(bytes(message, "UTF-8")) == 0:
+        try:
+            if self.sock.send(bytes(message, "UTF-8")) == 0:
+                self.disconnect()
+        except Exception as e:
+            print(e)
             self.disconnect()
 
     def recv(self):
@@ -116,7 +121,10 @@ class irc_server( ):
                 break
 
         #print(buf)
-        return buf.decode()
+        try:
+            return buf.decode()
+        except Exception as e:
+            return INVALID_MSG
 
     def send_message( self, channel, message ):
         self.send("PRIVMSG %s :%s\r\n" % (channel, message))
