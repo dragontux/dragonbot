@@ -30,6 +30,13 @@ def version_ctcp_reply(server, msg):
         server.send_notice(msg["channel"], "\01VERSION desune-bot v0.1\01")
         print("Sent version...")
 
+@irc_event("PRIVMSG")
+def ibip_reply(server, msg):
+    if msg["message"][:5] == ".bots":
+        server.send_message(msg["channel"],
+                            "Reporting in! [Python] mobile TTS bot by sugoi " +
+                            "(sry for bad connection)")
+
 # TODO: avoid having this as a global variable maybe
 last_channel = ""
 
